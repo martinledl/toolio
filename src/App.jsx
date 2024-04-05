@@ -17,6 +17,7 @@ import {
 function App() {
   const [errors, setErrors] = useState([]);
   const [selectedFormat, setSelectedFormat] = useState('image/jpeg');
+  const [loading, setLoading] = useState(false);
 
   const convert = async () => {
     const files = document.getElementById('infile')?.files;
@@ -30,8 +31,6 @@ function App() {
       accuracy: 0.95,
     };
 
-    console.log(config)
-
     if (!files || files.length === 0) {
       return;
     }
@@ -39,9 +38,12 @@ function App() {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       try {
+        setLoading(true);
         const result = await compressAccurately(file, config);
 
-        downloadFile(result, file.name.replace(/\.[^/.]+$/, "") + '-compressed.jpg');
+        console.log(result);
+        downloadFile(result, file.name.replace(/\.[^/.]+$/, "") + '-compressed');
+        setLoading(false);
       } catch (e) {
         setErrors(prevState => [...prevState, e]);
       }
@@ -76,7 +78,10 @@ function App() {
           <Label htmlFor="size" className="text-left">Size (in KB)</Label>
           <Input id="size" type="number" defaultValue={5000} min={0} step={1000}/>
 
-          <Button onClick={convert}>Convert</Button>
+          <Button onClick={convert} className="relative">
+            Convert
+            {loading && <div className="loader absolute right-3"></div>}
+          </Button>
 
           {errors.length > 0 && (
             <div className="text-red-500">
